@@ -14,6 +14,6 @@ pkgbase = omarchy-rdp
 	depends = libsecret
 	depends = foot
 	source = omarchy-rdp-1.0.0.tar.gz::https://github.com/PouletTendre/omarchy-rdp/archive/refs/tags/v1.0.0.tar.gz
-	sha256sums = SKIP
+	sha256sums = 8579b027d7a1c40b44f2078c46eaf6ffaeaba5c43bdcb97ea2caedbd03a7c05e
 
 pkgname = omarchy-rdp
