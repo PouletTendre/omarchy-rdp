@@ -39,8 +39,8 @@ config_save_profile() {
     return 1
   fi
 
-  # Ensure default port 3389 if not provided
-  profile_json="$(echo "$profile_json" | jq '.port = (.port // 3389)')"
+  # Invariant: Never store password in profiles.json
+  profile_json="$(echo "$profile_json" | jq 'del(.password) | .port = (.port // 3389)')"
 
   local tmp_file
   tmp_file="$(mktemp "$CONFIG_DIR/profiles.tmp.XXXXXX")"

@@ -7,6 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$SCRIPT_DIR/../lib"
 
 source "$LIB_DIR/config.sh"
+source "$LIB_DIR/keyring.sh"
 source "$LIB_DIR/rdp.sh"
 
 show_help() {
@@ -17,20 +18,21 @@ Usage:
   omarchy-rdp [options]
 
 Commands:
-  --list               List all saved profile names
-  --get <name>         Output profile JSON
-  --add <json>         Add or update a profile from JSON string
-  --delete <name>      Delete a profile by name
-  --get-args <name>    Print generated FreeRDP 3 arguments for a profile
-  --connect <name>     Launch RDP session for profile directly
-  --help, -h           Show this help message
+  --list                       List all saved profile names
+  --get <name>                 Output profile JSON
+  --add <json>                 Add or update a profile from JSON string
+  --delete <name>              Delete a profile and its stored credential
+  --set-password <name> <pass> Store credential in Linux Keyring for profile
+  --get-password <name>        Retrieve credential from Linux Keyring
+  --get-args <name>            Print generated FreeRDP 3 arguments for a profile
+  --connect <name>             Launch RDP session for profile directly
+  --help, -h                   Show this help message
 
 Interactive:
   Run without arguments to launch the interactive TUI.
 HELP_EOF
 }
 
-# CLI Argument dispatcher
 case "${1:-}" in
   --list)
     config_list_profiles
@@ -55,6 +57,21 @@ case "${1:-}" in
       exit 1
     fi
     config_delete_profile "$2"
+    keyring_delete_password "$2"
+    ;;
+  --set-password)
+    if [[ -z "${2:-}" || -z "${3:-}" ]]; then
+      echo "Error: Usage: --set-password <profile_name> <password>" >&2
+      exit 1
+    fi
+    keyring_set_password "$2" "$3"
+    ;;
+  --get-password)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile name" >&2
+      exit 1
+    fi
+    keyring_get_password "$2"
     ;;
   --get-args)
     if [[ -z "${2:-}" ]]; then
@@ -66,7 +83,8 @@ case "${1:-}" in
       echo "Error: Profile '$2' not found" >&2
       exit 1
     fi
-    rdp_build_args "$prof"
+    pass="$(keyring_get_password "$2" || true)"
+    rdp_build_args "$prof" "$pass"
     ;;
   --connect)
     if [[ -z "${2:-}" ]]; then
@@ -78,7 +96,20 @@ case "${1:-}" in
       echo "Error: Profile '$2' not found" >&2
       exit 1
     fi
-    rdp_connect "$prof"
+    pass="$(keyring_get_password "$2" || true)"
+    if [[ -z "$pass" && -t 0 ]]; then
+      # Prompt if running interactively
+      if command -v gum >/dev/null 2>&1; then
+        pass="$(gum input --password --placeholder "Mot de passe pour $(echo "$prof" | jq -r .username)")"
+        if gum confirm "Enregistrer ce mot de passe dans le trousseau de clés ?"; then
+          keyring_set_password "$2" "$pass"
+        fi
+      else
+        read -rsp "Mot de passe: " pass
+        echo
+      fi
+    fi
+    rdp_connect "$prof" "$pass"
     ;;
   --help|-h)
     show_help
