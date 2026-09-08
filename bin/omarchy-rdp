@@ -9,6 +9,7 @@ LIB_DIR="$SCRIPT_DIR/../lib"
 source "$LIB_DIR/config.sh"
 source "$LIB_DIR/keyring.sh"
 source "$LIB_DIR/rdp.sh"
+source "$LIB_DIR/ui.sh"
 
 show_help() {
   cat << 'HELP_EOF'
@@ -91,31 +92,13 @@ case "${1:-}" in
       echo "Error: Missing profile name" >&2
       exit 1
     fi
-    prof="$(config_get_profile "$2")"
-    if [[ -z "$prof" || "$prof" == "null" ]]; then
-      echo "Error: Profile '$2' not found" >&2
-      exit 1
-    fi
-    pass="$(keyring_get_password "$2" || true)"
-    if [[ -z "$pass" && -t 0 ]]; then
-      # Prompt if running interactively
-      if command -v gum >/dev/null 2>&1; then
-        pass="$(gum input --password --placeholder "Mot de passe pour $(echo "$prof" | jq -r .username)")"
-        if gum confirm "Enregistrer ce mot de passe dans le trousseau de clés ?"; then
-          keyring_set_password "$2" "$pass"
-        fi
-      else
-        read -rsp "Mot de passe: " pass
-        echo
-      fi
-    fi
-    rdp_connect "$prof" "$pass"
+    ui_connect "$2"
     ;;
   --help|-h)
     show_help
     ;;
   "")
-    echo "Interactive TUI mode will be launched here."
+    ui_main_loop
     ;;
   *)
     echo "Unknown option: $1" >&2
