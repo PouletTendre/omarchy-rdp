@@ -106,8 +106,19 @@ ui_launch_detached() {
     fi
   fi
 
-  # Spawn watchdog in background and close this launcher window immediately
-  nohup "$SCRIPT_DIR/omarchy-rdp" --watchdog "$name" "$cred" >/dev/null 2>&1 &
+  # Dispatch via systemd-run so the process escapes the terminal's cgroup
+  if command -v systemd-run >/dev/null 2>&1; then
+    systemd-run --user \
+      --setenv=WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-}" \
+      --setenv=DISPLAY="${DISPLAY:-}" \
+      --setenv=XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-}" \
+      --setenv=XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}" \
+      --setenv=PATH="$PATH" \
+      omarchy-rdp --watchdog "$name" "${cred:-}" >/dev/null 2>&1
+  else
+    nohup omarchy-rdp --watchdog "$name" "${cred:-}" >/dev/null 2>&1 &
+  fi
+
   exit 0
 }
 
@@ -341,7 +352,7 @@ ui_main_loop() {
       "🖥️   "*)
         local raw="${choice#🖥️   }"
         local name="${raw%%${DELIM}*}"
-        # Detach session: closes this floating launcher window immediately!
+        # Detach session via systemd-run: closes this floating launcher window immediately!
         ui_launch_detached "$name"
         ;;
     esac
