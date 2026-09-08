@@ -33,7 +33,7 @@ yay -S omarchy-rdp
 ### Méthode 2 : Installation en une ligne (Script direct)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/PouletTendre/omarchy-rdp/master/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/PouletTendre/omarchy-rdp/main/install.sh | bash
 ```
 
 ### Méthode 3 : Installation manuelle depuis les sources
