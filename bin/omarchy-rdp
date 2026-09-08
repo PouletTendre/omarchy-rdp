@@ -11,7 +11,17 @@ while [ -h "$SOURCE" ]; do
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
 done
 SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-LIB_DIR="$SCRIPT_DIR/../lib"
+
+if [[ -d "$SCRIPT_DIR/../lib/omarchy-rdp" ]]; then
+  LIB_DIR="$SCRIPT_DIR/../lib/omarchy-rdp"
+elif [[ -d "$SCRIPT_DIR/../lib" ]]; then
+  LIB_DIR="$SCRIPT_DIR/../lib"
+elif [[ -d "/usr/lib/omarchy-rdp" ]]; then
+  LIB_DIR="/usr/lib/omarchy-rdp"
+else
+  echo "Error: Could not locate omarchy-rdp library directory" >&2
+  exit 1
+fi
 
 source "$LIB_DIR/config.sh"
 source "$LIB_DIR/keyring.sh"
@@ -34,6 +44,7 @@ Commands:
   --get-password <name>        Retrieve credential from Linux Keyring
   --get-args <name>            Print generated FreeRDP 3 arguments for a profile
   --connect <name>             Launch RDP session for profile directly
+  --watchdog <name> [cred]     Internal background runner monitoring session lifecycle
   --version, -v                Print version
   --help, -h                   Show this help message
 
@@ -118,6 +129,34 @@ case "${1:-}" in
       fi
     fi
     rdp_execute_session "$prof" "$cred"
+    ;;
+  --watchdog)
+    if [[ -z "${2:-}" ]]; then
+      exit 1
+    fi
+    prof_name="$2"
+    cred="${3:-}"
+    prof="$(config_get_profile "$prof_name")"
+    if [[ -z "$prof" || "$prof" == "null" ]]; then
+      exit 1
+    fi
+    if [[ -z "$cred" ]]; then
+      cred="$(keyring_get_password "$prof_name" || true)"
+    fi
+
+    start_time="$(date +%s)"
+    exit_code=0
+    rdp_execute_session "$prof" "$cred" || exit_code=$?
+    end_time="$(date +%s)"
+    duration=$((end_time - start_time))
+
+    if (( exit_code != 0 || duration < 3 )); then
+      ui_notify_error "La session '$prof_name' s'est fermée anormalement (durée: ${duration}s, code: $exit_code)."
+      if command -v foot >/dev/null 2>&1; then
+        foot --app-id=omarchy-rdp -e "$SCRIPT_DIR/omarchy-rdp" &
+      fi
+    fi
+    exit 0
     ;;
   --version|-v)
     echo "omarchy-rdp 1.0.0"

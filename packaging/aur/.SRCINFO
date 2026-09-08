@@ -1,0 +1,19 @@
+pkgbase = omarchy-rdp
+	pkgdesc = Interactive Terminal RDP Connection Manager for Omarchy and Hyprland
+	pkgver = 1.0.0
+	pkgrel = 1
+	url = https://github.com/PouletTendre/omarchy-rdp
+	arch = any
+	license = MIT
+	makedepends = git
+	depends = bash
+	depends = jq
+	depends = gum
+	depends = fzf
+	depends = freerdp
+	depends = libsecret
+	depends = foot
+	source = omarchy-rdp-1.0.0.tar.gz::https://github.com/PouletTendre/omarchy-rdp/archive/refs/tags/v1.0.0.tar.gz
+	sha256sums = SKIP
+
+pkgname = omarchy-rdp

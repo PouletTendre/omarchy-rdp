@@ -75,9 +75,40 @@ ui_launch_session() {
   return 0
 }
 
-# Alias for compatibility
 ui_connect() {
   ui_launch_session "$@"
+}
+
+ui_launch_detached() {
+  local name="$1"
+  local cred="${2:-}"
+
+  local prof
+  prof="$(config_get_profile "$name")"
+  if [[ -z "$prof" || "$prof" == "null" ]]; then
+    ui_notify_error "Profil '$name' introuvable."
+    return 1
+  fi
+
+  if [[ -z "$cred" ]]; then
+    cred="$(keyring_get_password "$name" || true)"
+  fi
+
+  # Ask for credentials inside this window if missing before closing
+  if [[ -z "$cred" && -t 0 ]]; then
+    if command -v gum >/dev/null 2>&1; then
+      local user
+      user="$(echo "$prof" | jq -r '.username')"
+      cred="$(gum input --password --placeholder "Mot de passe Windows pour $user")"
+      if [[ -n "$cred" ]] && gum confirm --default=true "Mémoriser ce credential dans le trousseau sécurisé ?"; then
+        keyring_set_password "$name" "$cred"
+      fi
+    fi
+  fi
+
+  # Spawn watchdog in background and close this launcher window immediately
+  nohup "$SCRIPT_DIR/omarchy-rdp" --watchdog "$name" "$cred" >/dev/null 2>&1 &
+  exit 0
 }
 
 ui_new_profile() {
@@ -282,7 +313,6 @@ ui_main_loop() {
     local options
     options="$(ui_build_menu_options)"
     
-    # Use fzf for instant search and filtering if profiles exist, or gum choose
     if command -v fzf >/dev/null 2>&1; then
       choice="$(echo "$options" | fzf --height 50% --reverse --prompt="Rechercher ou sélectionner > " || true)"
     else
@@ -311,8 +341,8 @@ ui_main_loop() {
       "🖥️   "*)
         local raw="${choice#🖥️   }"
         local name="${raw%%${DELIM}*}"
-        ui_launch_session "$name"
-        read -rsp "Appuyez sur Entrée pour revenir au menu..." || true
+        # Detach session: closes this floating launcher window immediately!
+        ui_launch_detached "$name"
         ;;
     esac
   done

@@ -20,6 +20,10 @@ _Avoid_: Connection, link
 The interactive terminal user interface used to browse, edit, create profiles, and initiate sessions.
 _Avoid_: GUI, console, CLI
 
+**Launcher**:
+The transient floating window hosting the TUI, invoked from the application menu to launch a session.
+_Avoid_: Terminal, console window
+
 **Dynamic Resolution**:
 Automatic synchronization of the remote Windows desktop resolution with the local Hyprland window dimensions.
 _Avoid_: Fixed resolution, fullscreen-only
@@ -31,3 +35,7 @@ _Avoid_: Mount, shared folder, local disk
 **Display Scale**:
 The scaling factor derived from the focused Hyprland monitor and passed to FreeRDP to ensure crisp rendering on HiDPI displays.
 _Avoid_: Zoom, DPI
+
+**Package**:
+The installable Arch Linux distribution unit built from a PKGBUILD for installation via pacman or yay.
+_Avoid_: Installer, zip, binary

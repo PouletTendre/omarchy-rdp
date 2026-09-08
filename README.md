@@ -1,38 +1,48 @@
 # omarchy-rdp 🖥️
 
-Gestionnaire de connexions Bureau à Distance (RDP) interactif et ultra-rapide pour **Omarchy Linux** (Arch Linux / Hyprland).
+Gestionnaire de connexions Bureau à Distance (RDP) interactif, ultra-rapide et sécurisé, spécialement conçu pour **Omarchy Linux** (Arch Linux / Wayland / Hyprland).
 
 ---
 
 ## 🌟 Fonctionnalités
 
-- **Interface TUI Réactive** : Menu interactif au clavier (`gum` & `fzf`) avec sélection instantanée et Quick-Connect.
-- **Sécurité Maximale (Trousseau Linux)** : Vos mots de passe sont stockés et chiffrés dans le Secret Service Linux (`secret-tool` / GNOME Keyring), jamais écrits en clair sur le disque.
+- **Interface TUI Réactive & Filtrage Instantané** : Menu interactif au clavier avec `fzf` et `gum` pour filtrer et lancer vos profils en 1 frappe.
+- **Cycle de Vie Éphémère (Zero Clutter)** : Le Launcher se ferme immédiatement dès que la session démarre, ne laissant **aucune fenêtre de terminal flottante parasite** sur votre écran.
+- **Watchdog de Récupération** : Si la session RDP échoue ou s'interrompt prématurément (< 3s), une notification système est envoyée et le Launcher se rouvre automatiquement.
+- **Sécurité Maximale (Trousseau Linux)** : Vos identifiants sont chiffrés et stockés dans le Secret Service Linux (`secret-tool` / GNOME Keyring), jamais enregistrés en clair sur le disque.
 - **Intégration Hyprland & Wayland** :
-  - **Dynamic Resolution** : adaptation automatique de la résolution lors du redimensionnement de la fenêtre.
-  - **Détection automatique du Display Scale** : calcul du facteur d'échelle à partir de l'écran focalisé (`hyprctl monitors`) et application automatique de `/scale:140` ou `/scale:180` sur les écrans HiDPI.
-  - **Contournement du délai NLA Kerberos** : élimine le délai d'attente de 23 secondes lié aux requêtes DNS KDC de FreeRDP 3 sous Linux.
+  - **Dynamic Resolution** : la résolution Windows s'adapte automatiquement au redimensionnement sous le tiling Hyprland.
+  - **Détection automatique du Display Scale** : calcul du ratio à partir de l'écran focalisé (`hyprctl monitors`) et application automatique de `/scale:140` ou `/scale:180` sur les écrans HiDPI.
+  - **Contournement du délai NLA Kerberos** : élimine le délai d'attente de 23 secondes propre à FreeRDP 3 sous Linux.
   - **Presse-papier partagé et Audio** activés par défaut.
-  - **Redirection microphone et partage de dossiers locaux** optionnels par profil.
+  - **Redirection microphone et Shares locaux** optionnels par profil.
 - **Intégration Système Omarchy** :
-  - Lançable via le raccourci Omarchy `Super + Espace` dans une fenêtre flottante centrée (`foot --app-id=omarchy-rdp`).
-  - Commandes non-interactives en ligne de commande pour scripts et raccourcis personnalisés.
+  - Lançable via le raccourci `Super + Espace` dans une fenêtre flottante centrée (`foot --app-id=omarchy-rdp`).
+  - Commandes non-interactives en ligne de commande pour le scripting et les raccourcis personnalisés.
 
 ---
 
 ## 🚀 Installation
 
-Exécutez le script d'installation :
+### Méthode 1 : Via l'AUR (Recommandé sous Arch / Omarchy)
 
 ```bash
-./install.sh
+yay -S omarchy-rdp
 ```
 
-Le script :
-1. Vérifie les dépendances système (`jq`, `gum`, `fzf`, `xfreerdp3`, `secret-tool`, `foot`).
-2. Crée un lien symbolique vers `~/.local/bin/omarchy-rdp`.
-3. Installe le lanceur `.desktop` dans `~/.local/share/applications/`.
-4. Ajoute la règle de fenêtrage flottante dans `~/.config/hypr/hyprland.lua`.
+### Méthode 2 : Installation en une ligne (Script direct)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/PouletTendre/omarchy-rdp/master/install.sh | bash
+```
+
+### Méthode 3 : Installation manuelle depuis les sources
+
+```bash
+git clone https://github.com/PouletTendre/omarchy-rdp.git
+cd omarchy-rdp
+./install.sh
+```
 
 ---
 
@@ -48,7 +58,7 @@ omarchy-rdp
 
 Ou utilisez `Super + Espace` et cherchez **Omarchy RDP**.
 
-### Commandes CLI (Scripting / Raccourcis)
+### Commandes CLI
 
 ```bash
 # Lister les profils enregistrés
@@ -69,10 +79,22 @@ omarchy-rdp --delete "Mon PC Bureau"
 
 ---
 
+## 📦 Publication & Maintenance
+
+Consultez [PUBLISHING.md](PUBLISHING.md) pour les instructions détaillées sur la publication sur GitHub et l'AUR.
+
+---
+
 ## 🧪 Tests
 
-Pour exécuter la suite de tests complète :
+Pour exécuter la suite de tests automatisée complète :
 
 ```bash
 ./tests/run_all_tests.sh
 ```
+
+---
+
+## 📄 Licence
+
+MIT License - Copyright (c) 2026 PouletTendre
