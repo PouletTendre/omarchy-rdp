@@ -3,7 +3,14 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve symlinks to locate library directory reliably
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 LIB_DIR="$SCRIPT_DIR/../lib"
 
 source "$LIB_DIR/config.sh"
@@ -27,6 +34,7 @@ Commands:
   --get-password <name>        Retrieve credential from Linux Keyring
   --get-args <name>            Print generated FreeRDP 3 arguments for a profile
   --connect <name>             Launch RDP session for profile directly
+  --version, -v                Print version
   --help, -h                   Show this help message
 
 Interactive:
@@ -93,6 +101,9 @@ case "${1:-}" in
       exit 1
     fi
     ui_connect "$2"
+    ;;
+  --version|-v)
+    echo "omarchy-rdp 1.0.0"
     ;;
   --help|-h)
     show_help

@@ -34,7 +34,7 @@ assert_contains "$args" "/dynamic-resolution" "Args contain dynamic resolution"
 assert_contains "$args" "/cert:ignore" "Args contain cert ignore"
 
 # 5. Connect headless
-"$APP" --connect "WinDev"
+"$APP" --connect "WinDev" < /dev/null
 log="$(cat "$XDG_CONFIG_HOME/mock_xfreerdp3.log")"
 assert_contains "$log" "/v:192.168.1.50:3389" "FreeRDP 3 mock was invoked with host/port"
 

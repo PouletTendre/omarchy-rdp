@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Omarchy RDP
+Comment=Gestionnaire de Connexions Bureau à Distance
+Exec=foot --app-id=omarchy-rdp -e omarchy-rdp
+Icon=network-workgroup
+Terminal=false
+Type=Application
+Categories=Network;RemoteAccess;
+Keywords=rdp;windows;remote;desktop;freerdp;
