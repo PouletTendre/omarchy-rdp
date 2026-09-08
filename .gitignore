@@ -1,0 +1,12 @@
+# AI Skills & Agent artifacts
+.agents/
+skills-lock.json
+.scratch/
+AGENTS.md
+CONTEXT.md
+docs/agents/
+
+# Temporary files & logs
+*.tmp
+*.log
+/tmp/
