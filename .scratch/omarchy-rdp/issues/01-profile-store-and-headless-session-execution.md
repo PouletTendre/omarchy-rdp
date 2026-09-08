@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A configuration store persists Profiles with name, host, port (default 3389), and username to `profiles.json` under the user config directory.
-- [ ] Non-interactive CLI commands allow listing Profiles (`--list`), retrieving a Profile (`--get <name>`), adding a Profile (`--add <json>`), and deleting a Profile (`--delete <name>`).
-- [ ] Non-interactive CLI command `--get-args <name>` outputs the exact FreeRDP 3 argument vector generated for a Profile, including `/v:`, `/u:`, `/dynamic-resolution`, and `/cert:ignore`.
-- [ ] Executing a Session via `--connect <name>` spawns FreeRDP 3 with the assembled arguments.
-- [ ] Automated integration test suite validates the CLI seam against an isolated temporary configuration directory.
+- [x] A configuration store persists Profiles with name, host, port (default 3389), and username to `profiles.json` under the user config directory.
+- [x] Non-interactive CLI commands allow listing Profiles (`--list`), retrieving a Profile (`--get <name>`), adding a Profile (`--add <json>`), and deleting a Profile (`--delete <name>`).
+- [x] Non-interactive CLI command `--get-args <name>` outputs the exact FreeRDP 3 argument vector generated for a Profile, including `/v:`, `/u:`, `/dynamic-resolution`, and `/cert:ignore`.
+- [x] Executing a Session via `--connect <name>` spawns FreeRDP 3 with the assembled arguments.
+- [x] Automated integration test suite validates the CLI seam against an isolated temporary configuration directory.

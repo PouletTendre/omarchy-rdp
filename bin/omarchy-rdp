@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# omarchy-rdp: RDP Connection Manager for Omarchy
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LIB_DIR="$SCRIPT_DIR/../lib"
+
+source "$LIB_DIR/config.sh"
+source "$LIB_DIR/rdp.sh"
+
+show_help() {
+  cat << 'HELP_EOF'
+omarchy-rdp: Terminal RDP Connection Manager for Omarchy
+
+Usage:
+  omarchy-rdp [options]
+
+Commands:
+  --list               List all saved profile names
+  --get <name>         Output profile JSON
+  --add <json>         Add or update a profile from JSON string
+  --delete <name>      Delete a profile by name
+  --get-args <name>    Print generated FreeRDP 3 arguments for a profile
+  --connect <name>     Launch RDP session for profile directly
+  --help, -h           Show this help message
+
+Interactive:
+  Run without arguments to launch the interactive TUI.
+HELP_EOF
+}
+
+# CLI Argument dispatcher
+case "${1:-}" in
+  --list)
+    config_list_profiles
+    ;;
+  --get)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile name" >&2
+      exit 1
+    fi
+    config_get_profile "$2"
+    ;;
+  --add)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile JSON" >&2
+      exit 1
+    fi
+    config_save_profile "$2"
+    ;;
+  --delete)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile name" >&2
+      exit 1
+    fi
+    config_delete_profile "$2"
+    ;;
+  --get-args)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile name" >&2
+      exit 1
+    fi
+    prof="$(config_get_profile "$2")"
+    if [[ -z "$prof" || "$prof" == "null" ]]; then
+      echo "Error: Profile '$2' not found" >&2
+      exit 1
+    fi
+    rdp_build_args "$prof"
+    ;;
+  --connect)
+    if [[ -z "${2:-}" ]]; then
+      echo "Error: Missing profile name" >&2
+      exit 1
+    fi
+    prof="$(config_get_profile "$2")"
+    if [[ -z "$prof" || "$prof" == "null" ]]; then
+      echo "Error: Profile '$2' not found" >&2
+      exit 1
+    fi
+    rdp_connect "$prof"
+    ;;
+  --help|-h)
+    show_help
+    ;;
+  "")
+    echo "Interactive TUI mode will be launched here."
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    show_help >&2
+    exit 1
+    ;;
+esac
