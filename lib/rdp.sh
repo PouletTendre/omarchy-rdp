@@ -33,6 +33,7 @@ rdp_setup_krb5() {
 rdp_build_args() {
   local profile_json="$1"
   local credential="${2:-}"
+  local mask_secrets="${3:-false}"
 
   local host port username domain sound microphone clipboard share_path ignore_cert dynamic_res
   host="$(echo "$profile_json" | jq -r '.host')"
@@ -86,7 +87,11 @@ rdp_build_args() {
   fi
 
   if [[ -n "$credential" ]]; then
-    args+=("/p:$credential")
+    if [[ "$mask_secrets" == "true" ]]; then
+      args+=("/p:********")
+    else
+      args+=("/p:$credential")
+    fi
   fi
 
   printf '%s\n' "${args[@]}"
@@ -98,11 +103,9 @@ rdp_execute_session() {
 
   rdp_setup_krb5
 
-  local -a args=()
-  while IFS= read -r arg; do
-    [[ -n "$arg" ]] && args+=("$arg")
-  done < <(rdp_build_args "$profile_json" "$credential")
-
-  xfreerdp3 "${args[@]}"
+  # Pass FreeRDP arguments through file descriptor 3 (/args-from:fd:3).
+  # This prevents credentials, usernames, and hostnames from leaking in
+  # process lists (ps aux, /proc/$PID/cmdline).
+  xfreerdp3 /args-from:fd:3 3< <(rdp_build_args "$profile_json" "$credential" false)
   return $?
 }

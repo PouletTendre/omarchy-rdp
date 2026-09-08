@@ -29,6 +29,6 @@ assert_contains "$hypr_content" 'o.window("^(omarchy-rdp)$"' "Hyprland window ru
 
 # 4. Verify binary executed from outside repo via symlink works
 installed_ver="$("$FAKE_HOME/.local/bin/omarchy-rdp" --version)"
-assert_eq "omarchy-rdp 1.0.0" "$installed_ver" "Installed symlink runs and outputs version"
+assert_contains "$installed_ver" "omarchy-rdp 1." "Installed symlink runs and outputs version"
 
 report_results

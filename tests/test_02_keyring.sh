@@ -86,14 +86,24 @@ assert_eq "SuperSecret123" "$stored_pass" "Password correctly stored in Secret S
 profile_json="$("$APP" --get "WinDev")"
 assert_eq "null" "$(echo "$profile_json" | jq -r '.password // "null"')" "profiles.json contains no password"
 
-# 5. FreeRDP arguments now include the stored password
-args="$("$APP" --get-args "WinDev")"
-assert_contains "$args" "/p:SuperSecret123" "Args retrieve password from keyring"
+# 5. FreeRDP arguments mask password by default on CLI and reveal only with --show-secrets
+masked_args="$("$APP" --get-args "WinDev")"
+assert_contains "$masked_args" "/p:********" "Args mask password by default on CLI"
 
-# 6. Connecting invokes FreeRDP with the password
+raw_args="$("$APP" --get-args "WinDev" --show-secrets)"
+assert_contains "$raw_args" "/p:SuperSecret123" "Args retrieve password from keyring with --show-secrets"
+
+# 6. Connecting invokes FreeRDP with the password securely via file descriptor (not in process argv)
 "$APP" --connect "WinDev"
 log="$(cat "$XDG_CONFIG_HOME/mock_xfreerdp3.log")"
-assert_contains "$log" "/p:SuperSecret123" "FreeRDP invoked with stored password"
+cli_call="$(grep "^xfreerdp3 cli:" "$XDG_CONFIG_HOME/mock_xfreerdp3.log" | head -n 1)"
+assert_contains "$cli_call" "/args-from:fd:3" "FreeRDP CLI only uses descriptor pipe"
+if [[ "$cli_call" == *"/p:"* ]]; then
+  assert_eq "no /p: in cli" "found /p: in cli" "Password must not leak into process CLI arguments"
+else
+  assert_eq "clean" "clean" "Password not exposed in FreeRDP command line"
+fi
+assert_contains "$log" "/p:SuperSecret123" "FreeRDP receives stored password via fd:3"
 
 # 7. Deleting profile clears the password from keyring
 "$APP" --delete "WinDev"

@@ -19,7 +19,13 @@ setup_test_env() {
   # Default mock xfreerdp3
   cat << 'MOCK_EOF' > "$MOCK_BIN_DIR/xfreerdp3"
 #!/usr/bin/env bash
-echo "xfreerdp3 invoked with: $@" >> "$XDG_CONFIG_HOME/mock_xfreerdp3.log"
+echo "xfreerdp3 cli: $@" >> "$XDG_CONFIG_HOME/mock_xfreerdp3.log"
+if [[ "$*" == *"/args-from:fd:3"* ]]; then
+  fd_content="$(cat <&3)"
+  echo "xfreerdp3 fd3: $fd_content" >> "$XDG_CONFIG_HOME/mock_xfreerdp3.log"
+else
+  echo "xfreerdp3 invoked with: $@" >> "$XDG_CONFIG_HOME/mock_xfreerdp3.log"
+fi
 exit 0
 MOCK_EOF
   chmod +x "$MOCK_BIN_DIR/xfreerdp3"

@@ -94,16 +94,30 @@ ui_launch_detached() {
     cred="$(keyring_get_password "$name" || true)"
   fi
 
+  local tmp_cred_file=""
   # Ask for credentials inside this window if missing before closing
   if [[ -z "$cred" && -t 0 ]]; then
     if command -v gum >/dev/null 2>&1; then
       local user
       user="$(echo "$prof" | jq -r '.username')"
       cred="$(gum input --password --placeholder "Mot de passe Windows pour $user")"
-      if [[ -n "$cred" ]] && gum confirm --default=true "Mémoriser ce credential dans le trousseau sécurisé ?"; then
-        keyring_set_password "$name" "$cred"
+      if [[ -n "$cred" ]]; then
+        if gum confirm --default=true "Mémoriser ce credential dans le trousseau sécurisé ?"; then
+          keyring_set_password "$name" "$cred"
+        else
+          local runtime_dir="${XDG_RUNTIME_DIR:-/tmp}/omarchy-rdp"
+          mkdir -p -m 700 "$runtime_dir"
+          tmp_cred_file="$(mktemp "$runtime_dir/cred_XXXXXX")"
+          chmod 600 "$tmp_cred_file"
+          printf '%s' "$cred" > "$tmp_cred_file"
+        fi
       fi
     fi
+  fi
+
+  local -a watchdog_cmd=("omarchy-rdp" "--watchdog" "$name")
+  if [[ -n "$tmp_cred_file" ]]; then
+    watchdog_cmd+=("--credential-file" "$tmp_cred_file")
   fi
 
   # Dispatch via systemd-run so the process escapes the terminal's cgroup
@@ -114,9 +128,9 @@ ui_launch_detached() {
       --setenv=XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-}" \
       --setenv=XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}" \
       --setenv=PATH="$PATH" \
-      omarchy-rdp --watchdog "$name" "${cred:-}" >/dev/null 2>&1
+      "${watchdog_cmd[@]}" >/dev/null 2>&1
   else
-    nohup omarchy-rdp --watchdog "$name" "${cred:-}" >/dev/null 2>&1 &
+    nohup "${watchdog_cmd[@]}" >/dev/null 2>&1 &
   fi
 
   exit 0

@@ -42,9 +42,9 @@ Commands:
   --delete <name>              Delete a profile and its stored credential
   --set-password <name> <pass> Store credential in Linux Keyring for profile
   --get-password <name>        Retrieve credential from Linux Keyring
-  --get-args <name>            Print generated FreeRDP 3 arguments for a profile
+  --get-args <name> [--show-secrets] Print generated FreeRDP 3 arguments (password masked by default)
   --connect <name>             Launch RDP session for profile directly
-  --watchdog <name> [cred]     Internal background runner monitoring session lifecycle
+  --watchdog <name>            Internal background runner monitoring session lifecycle
   --version, -v                Print version
   --help, -h                   Show this help message
 
@@ -104,7 +104,11 @@ case "${1:-}" in
       exit 1
     fi
     cred="$(keyring_get_password "$2" || true)"
-    rdp_build_args "$prof" "$cred"
+    if [[ "${3:-}" == "--show-secrets" || "${3:-}" == "--raw" ]]; then
+      rdp_build_args "$prof" "$cred" false
+    else
+      rdp_build_args "$prof" "$cred" true
+    fi
     ;;
   --connect)
     if [[ -z "${2:-}" ]]; then
@@ -135,11 +139,32 @@ case "${1:-}" in
       exit 1
     fi
     prof_name="$2"
-    cred="${3:-}"
+    shift 2
+    cred_file=""
+    cred=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --credential-file)
+          cred_file="${2:-}"
+          shift 2
+          ;;
+        *)
+          cred="$1"
+          shift
+          ;;
+      esac
+    done
+
     prof="$(config_get_profile "$prof_name")"
     if [[ -z "$prof" || "$prof" == "null" ]]; then
       exit 1
     fi
+
+    if [[ -n "$cred_file" && -f "$cred_file" ]]; then
+      cred="$(cat "$cred_file" 2>/dev/null || true)"
+      rm -f "$cred_file"
+    fi
+
     if [[ -z "$cred" ]]; then
       cred="$(keyring_get_password "$prof_name" || true)"
     fi
@@ -159,7 +184,7 @@ case "${1:-}" in
     exit 0
     ;;
   --version|-v)
-    echo "omarchy-rdp 1.0.0"
+    echo "omarchy-rdp 1.0.3"
     ;;
   --help|-h)
     show_help

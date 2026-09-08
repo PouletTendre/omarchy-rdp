@@ -43,7 +43,7 @@ exit 1
 FAIL_RDP_EOF
 chmod +x "$MOCK_BIN_DIR/xfreerdp3"
 
-"$APP" --watchdog "TargetPC" "dummyPass"
+"$APP" --watchdog "TargetPC"
 notify_log="$(cat "$XDG_CONFIG_HOME/mock_notify.log" 2>/dev/null || true)"
 foot_log="$(cat "$XDG_CONFIG_HOME/mock_foot.log" 2>/dev/null || true)"
 
@@ -60,7 +60,7 @@ exit 0
 OK_RDP_EOF
 chmod +x "$MOCK_BIN_DIR/xfreerdp3"
 
-"$APP" --watchdog "TargetPC" "dummyPass"
+"$APP" --watchdog "TargetPC"
 assert_eq "" "$(cat "$XDG_CONFIG_HOME/mock_notify.log" 2>/dev/null || true)" "Silent exit when session succeeds normally"
 assert_eq "" "$(cat "$XDG_CONFIG_HOME/mock_foot.log" 2>/dev/null || true)" "No reopening when session succeeds normally"
 
