@@ -1,20 +1,20 @@
 # omarchy-rdp
 
-Gestionnaire interactif de connexions Bureau à Distance (RDP) optimisé pour Omarchy Linux (Arch Linux / Wayland / Hyprland).
+Gestionnaire interactif de sessions Bureau à Distance (RDP) optimisé pour Omarchy Linux (Arch Linux / Wayland / Hyprland).
 
 ---
 
 ## Fonctionnalités
 
-- **Interface TUI au clavier** : Recherche et filtrage instantanés des profils de connexion via `fzf` et formulaires interactifs via `gum`.
-- **Fenêtre éphémère** : Fermeture immédiate du terminal lanceur lors du démarrage de la session RDP pour éviter les fenêtres résiduelles sous Hyprland.
-- **Surveillance de session** : Détection des sorties prématurées (< 3s) ou des échecs de connexion, notification sur le bureau et réouverture automatique de l'interface.
-- **Stockage sécurisé des identifiants** : Les mots de passe sont conservés dans le trousseau de clés Linux (`secret-tool` / Secret Service) et ne sont jamais enregistrés en clair.
+- **Interface TUI au clavier** : Recherche et filtrage instantanés des profils via `fzf` et formulaires interactifs via `gum`.
+- **Fenêtre éphémère** : Fermeture immédiate du Launcher lors de l'initialisation de la session pour éviter les fenêtres flottantes résiduelles sous Hyprland.
+- **Surveillance de session** : Détection des sorties prématurées (< 3s) ou des échecs, notification sur le bureau et réouverture automatique du Launcher.
+- **Stockage sécurisé des identifiants** : Les secrets d'authentification sont conservés dans le trousseau de clés Linux (`secret-tool` / Secret Service) et ne sont jamais enregistrés en clair.
 - **Optimisations Wayland & Hyprland** :
-  - Résolution dynamique adaptée aux redimensionnements de fenêtres.
-  - Calcul et transmission automatique du facteur d'échelle (`/scale`) d'après l'écran focalisé (`hyprctl monitors`).
+  - Dynamic Resolution adaptée aux redimensionnements de fenêtres.
+  - Calcul et transmission automatique du Display Scale d'après l'écran focalisé (`hyprctl monitors`).
   - Contournement de la latence NLA/Kerberos de FreeRDP 3.
-  - Presse-papier partagé, redirection audio, microphone et dossiers locaux.
+  - Presse-papier partagé, redirection audio, microphone et dossiers locaux (Shares).
 - **Intégration système** :
   - Raccourci `Super + Espace` (lanceur d'applications) avec règle de fenêtrage flottante dédiée.
   - Commandes non-interactives en ligne de commande pour l'automatisation et les scripts.
@@ -92,9 +92,9 @@ Si vous avez utilisé le script d'installation :
   curl -fsSL https://raw.githubusercontent.com/PouletTendre/omarchy-rdp/main/uninstall.sh | bash
   ```
 
-- **Suppression complète incluant profils et mots de passe (`--purge`) :**
+- **Suppression complète incluant profils et identifiants (`--purge`) :**
 
-  Par défaut, les profils de connexion (`~/.config/omarchy-rdp`) et les identifiants stockés dans le trousseau sont conservés. Pour supprimer également toutes les données utilisateur :
+  Par défaut, les profils (`~/.config/omarchy-rdp`) et les identifiants stockés dans le trousseau sont conservés. Pour supprimer également toutes les données utilisateur :
 
   ```bash
   ./uninstall.sh --purge
@@ -122,29 +122,18 @@ L'application est également accessible depuis le lanceur système via `Super + 
 # Lister les profils enregistrés
 omarchy-rdp --list
 
-# Se connecter directement à un profil
+# Lancer directement une session pour un profil
 omarchy-rdp --connect "Mon Profil"
 
-# Afficher les arguments FreeRDP 3 générés (sans mot de passe)
+# Afficher les arguments FreeRDP 3 générés (sans identifiant)
 omarchy-rdp --get-args "Mon Profil"
 
-# Définir le mot de passe d'un profil dans le trousseau
-omarchy-rdp --set-password "Mon Profil" "MonMotDePasse"
+# Enregistrer l'identifiant secret d'un profil dans le trousseau
+omarchy-rdp --set-password "Mon Profil" "MonSecret"
 
 # Supprimer un profil et ses identifiants associés
 omarchy-rdp --delete "Mon Profil"
 ```
-
----
-
-## Architecture
-
-- `bin/omarchy-rdp` : point d'entrée exécutable, gestionnaire de cycle de vie et mode non-interactif.
-- `lib/config.sh` : gestion du magasin de profils JSON (`~/.config/omarchy-rdp/profiles.json`).
-- `lib/keyring.sh` : interface avec le trousseau Secret Service (`secret-tool`).
-- `lib/rdp.sh` : détection d'affichage Hyprland et construction des arguments FreeRDP 3.
-- `lib/ui.sh` : interface utilisateur TUI (`gum` et `fzf`).
-- `docs/adr/` : fiches de décisions architecturales (Architecture Decision Records).
 
 ---
 
@@ -161,3 +150,4 @@ Pour exécuter la suite de tests d'intégration automatisée :
 ## Licence
 
 MIT License. Voir [LICENSE](LICENSE) pour plus de détails.
+

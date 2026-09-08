@@ -6,7 +6,26 @@ source "$SCRIPT_DIR/test_helpers.sh"
 
 echo "Running Ticket 05 integration tests..."
 setup_test_env
+export TEST_DIR
 trap cleanup_test_env EXIT
+
+# Mock update-desktop-database and secret-tool
+cat << 'MOCK_DB' > "$MOCK_BIN_DIR/update-desktop-database"
+#!/usr/bin/env bash
+echo "update-desktop-database: $*" >> "$TEST_DIR/desktop_db.log"
+exit 0
+MOCK_DB
+chmod +x "$MOCK_BIN_DIR/update-desktop-database"
+
+cat << 'MOCK_SECRET' > "$MOCK_BIN_DIR/secret-tool"
+#!/usr/bin/env bash
+echo "secret-tool: $*" >> "$TEST_DIR/secret_tool.log"
+exit 0
+MOCK_SECRET
+chmod +x "$MOCK_BIN_DIR/secret-tool"
+
+# Verify uninstall.sh permissions
+assert_eq "true" "$([[ -x "$SCRIPT_DIR/../uninstall.sh" ]] && echo true || echo false)" "uninstall.sh has executable permissions"
 
 # Create fake HOME for installation test
 FAKE_HOME="$TEST_DIR/user_home"
@@ -31,26 +50,36 @@ assert_contains "$hypr_content" 'o.window("^(omarchy-rdp)$"' "Hyprland window ru
 installed_ver="$("$FAKE_HOME/.local/bin/omarchy-rdp" --version)"
 assert_contains "$installed_ver" "omarchy-rdp 1." "Installed symlink runs and outputs version"
 
-# 5. Create a fake profile to verify safe retention vs purge
+# 5. Create a fake profile and remote install dir to verify safe retention vs purge
 mkdir -p "$FAKE_HOME/.config/omarchy-rdp"
 echo '{"profiles":[{"name":"TestRetain"}]}' > "$FAKE_HOME/.config/omarchy-rdp/profiles.json"
-# Add extra config in hyprland.lua to verify we only delete the omarchy-rdp rule
+mkdir -p "$FAKE_HOME/.local/share/omarchy-rdp"
+touch "$FAKE_HOME/.local/share/omarchy-rdp/dummy"
+
+# Add extra config in hyprland.lua to verify we only delete the exact omarchy-rdp rule
 echo 'o.window("^(other-app)$", { float = true })' >> "$FAKE_HOME/.config/hypr/hyprland.lua"
+echo '-- Custom rule for omarchy-rdp-custom' >> "$FAKE_HOME/.config/hypr/hyprland.lua"
+echo 'o.window("^(omarchy-rdp-custom)$", { float = true })' >> "$FAKE_HOME/.config/hypr/hyprland.lua"
 
 # 6. Run standard uninstallation
 HOME="$FAKE_HOME" "$SCRIPT_DIR/../uninstall.sh" > "$TEST_DIR/uninstall.log"
 
 assert_eq "false" "$([[ -e "$FAKE_HOME/.local/bin/omarchy-rdp" ]] && echo true || echo false)" "Binary symlink removed by uninstall"
 assert_eq "false" "$([[ -e "$desktop_file" ]] && echo true || echo false)" "Desktop file removed by uninstall"
+assert_eq "false" "$([[ -d "$FAKE_HOME/.local/share/omarchy-rdp" ]] && echo true || echo false)" "Remote payload directory removed by uninstall"
 
 hypr_uninstalled="$(cat "$FAKE_HOME/.config/hypr/hyprland.lua")"
-assert_eq "false" "$(grep -q 'omarchy-rdp' "$FAKE_HOME/.config/hypr/hyprland.lua" && echo true || echo false)" "Hyprland rule removed from hyprland.lua"
+assert_eq "false" "$(grep -qF 'o.window("^(omarchy-rdp)$"' "$FAKE_HOME/.config/hypr/hyprland.lua" && echo true || echo false)" "Injected Hyprland rule removed from hyprland.lua"
 assert_contains "$hypr_uninstalled" "other-app" "Other Hyprland rules preserved"
+assert_contains "$hypr_uninstalled" "omarchy-rdp-custom" "Custom rules matching pattern preserved"
 assert_eq "true" "$([[ -f "$FAKE_HOME/.config/omarchy-rdp/profiles.json" ]] && echo true || echo false)" "User profiles preserved during standard uninstall"
+
+# Check desktop DB update was called
+assert_contains "$(cat "$TEST_DIR/desktop_db.log")" "update-desktop-database" "update-desktop-database invoked during uninstall"
 
 # 7. Run purge uninstallation
 HOME="$FAKE_HOME" "$SCRIPT_DIR/../uninstall.sh" --purge > "$TEST_DIR/uninstall-purge.log"
 assert_eq "false" "$([[ -e "$FAKE_HOME/.config/omarchy-rdp" ]] && echo true || echo false)" "User configuration directory removed by --purge"
+assert_contains "$(cat "$TEST_DIR/secret_tool.log")" "secret-tool: clear service omarchy-rdp" "secret-tool clear invoked during purge"
 
 report_results
-

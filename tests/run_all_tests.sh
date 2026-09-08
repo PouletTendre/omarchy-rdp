@@ -11,7 +11,7 @@ echo "========================================="
 
 # 1. Syntax check
 echo "Checking bash syntax across codebase..."
-bash -n "$SCRIPT_DIR/../bin/omarchy-rdp" "$SCRIPT_DIR/../lib/"*.sh "$SCRIPT_DIR/"*.sh "$SCRIPT_DIR/../install.sh"
+bash -n "$SCRIPT_DIR/../bin/omarchy-rdp" "$SCRIPT_DIR/../lib/"*.sh "$SCRIPT_DIR/"*.sh "$SCRIPT_DIR/../install.sh" "$SCRIPT_DIR/../uninstall.sh"
 echo "✓ Syntax OK"
 echo ""
 

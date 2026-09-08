@@ -37,21 +37,16 @@ else
   echo "- Aucun fichier desktop trouvé dans $DESKTOP_FILE"
 fi
 
-# 3. Suppression du répertoire d'installation autonome si présent
-if [[ -d "$INSTALL_BASE" ]]; then
-  rm -rf "$INSTALL_BASE"
-  echo "✓ Répertoire d'installation supprimé : $INSTALL_BASE"
-fi
-
-# 4. Retrait de la règle de fenêtrage Hyprland
-if [[ -f "$HYPR_LUA" ]] && grep -q "omarchy-rdp" "$HYPR_LUA"; then
+# 3. Retrait de la règle de fenêtrage Hyprland
+if [[ -f "$HYPR_LUA" ]] && grep -qF 'o.window("^(omarchy-rdp)$"' "$HYPR_LUA"; then
   temp_lua="$(mktemp)"
-  grep -v -E '(omarchy-rdp|-- Règle de fenêtre pour omarchy-rdp)' "$HYPR_LUA" > "$temp_lua" || true
+  grep -v -F -e 'o.window("^(omarchy-rdp)$", { float = true, center = true, size = { 850, 650 } })' \
+             -e '-- Règle de fenêtre pour omarchy-rdp' "$HYPR_LUA" > "$temp_lua" || true
   mv "$temp_lua" "$HYPR_LUA"
   echo "✓ Règle de fenêtre retirée de $HYPR_LUA"
 fi
 
-# 5. Gestion des profils et identifiants
+# 4. Gestion des profils et identifiants
 if [[ "$PURGE" == "true" ]]; then
   if [[ -d "$CONFIG_DIR" ]]; then
     rm -rf "$CONFIG_DIR"
@@ -68,5 +63,12 @@ else
   fi
 fi
 
+# 5. Suppression du répertoire d'installation autonome si présent
+if [[ -d "$INSTALL_BASE" ]]; then
+  rm -rf "$INSTALL_BASE"
+  echo "✓ Répertoire d'installation supprimé : $INSTALL_BASE"
+fi
+
 echo ""
 echo "✓ Désinstallation terminée."
+
