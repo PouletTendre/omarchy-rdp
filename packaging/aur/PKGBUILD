@@ -1,6 +1,6 @@
 # Maintainer: PouletTendre <https://github.com/PouletTendre>
 pkgname=omarchy-rdp
-pkgver=1.0.3
+pkgver=1.0.4
 pkgrel=1
 pkgdesc="Interactive Terminal RDP Connection Manager for Omarchy and Hyprland"
 arch=('any')
@@ -9,7 +9,7 @@ license=('MIT')
 depends=('bash' 'jq' 'gum' 'fzf' 'freerdp' 'libsecret' 'foot')
 makedepends=('git')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('4f39df13069ebbccd8706e86fd0a7340413dca686b3bf878b25deafe48abe463')
+sha256sums=('0fa6240761d70e6d88e9df1f2b84c484d2ba278ab8762a842cbe7eb01791b366')
 
 package() {
   cd "$srcdir/$pkgname-$pkgver"
