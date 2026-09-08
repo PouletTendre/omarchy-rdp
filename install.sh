@@ -56,7 +56,8 @@ else
   curl -fsSL "$RAW_URL/lib/rdp.sh" -o "$SOURCE_DIR/lib/rdp.sh"
   curl -fsSL "$RAW_URL/lib/ui.sh" -o "$SOURCE_DIR/lib/ui.sh"
   curl -fsSL "$RAW_URL/desktop/omarchy-rdp.desktop" -o "$SOURCE_DIR/desktop/omarchy-rdp.desktop"
-  chmod +x "$SOURCE_DIR/bin/omarchy-rdp" "$SOURCE_DIR/lib/"*.sh
+  curl -fsSL "$RAW_URL/uninstall.sh" -o "$SOURCE_DIR/uninstall.sh"
+  chmod +x "$SOURCE_DIR/bin/omarchy-rdp" "$SOURCE_DIR/lib/"*.sh "$SOURCE_DIR/uninstall.sh"
 fi
 
 # 3. Lien exécutable
@@ -88,7 +89,15 @@ if [[ -f "$HYPR_LUA" ]]; then
 fi
 
 echo ""
-echo "🎉 Installation terminée avec succès !"
-echo "Vous pouvez lancer l'application via :"
+echo "Installation terminée avec succès."
+echo "Lancement :"
 echo "  - Terminal : omarchy-rdp"
 echo "  - Raccourci : Super + Espace -> 'Omarchy RDP'"
+echo ""
+echo "Désinstallation :"
+if [[ -n "$LOCAL_REPO_DIR" ]]; then
+  echo "  - $LOCAL_REPO_DIR/uninstall.sh"
+else
+  echo "  - $SOURCE_DIR/uninstall.sh"
+fi
+
