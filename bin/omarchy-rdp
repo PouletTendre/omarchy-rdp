@@ -184,7 +184,7 @@ case "${1:-}" in
     exit 0
     ;;
   --version|-v)
-    echo "omarchy-rdp 1.0.3"
+    echo "omarchy-rdp 1.0.4"
     ;;
   --help|-h)
     show_help
