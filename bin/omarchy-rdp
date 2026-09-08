@@ -68,14 +68,14 @@ case "${1:-}" in
     config_delete_profile "$2"
     keyring_delete_password "$2"
     ;;
-  --set-password)
+  --set-password|--set-credential)
     if [[ -z "${2:-}" || -z "${3:-}" ]]; then
-      echo "Error: Usage: --set-password <profile_name> <password>" >&2
+      echo "Error: Usage: $1 <profile_name> <password>" >&2
       exit 1
     fi
     keyring_set_password "$2" "$3"
     ;;
-  --get-password)
+  --get-password|--get-credential)
     if [[ -z "${2:-}" ]]; then
       echo "Error: Missing profile name" >&2
       exit 1
@@ -92,15 +92,32 @@ case "${1:-}" in
       echo "Error: Profile '$2' not found" >&2
       exit 1
     fi
-    pass="$(keyring_get_password "$2" || true)"
-    rdp_build_args "$prof" "$pass"
+    cred="$(keyring_get_password "$2" || true)"
+    rdp_build_args "$prof" "$cred"
     ;;
   --connect)
     if [[ -z "${2:-}" ]]; then
       echo "Error: Missing profile name" >&2
       exit 1
     fi
-    ui_connect "$2"
+    prof="$(config_get_profile "$2")"
+    if [[ -z "$prof" || "$prof" == "null" ]]; then
+      echo "Error: Profile '$2' not found" >&2
+      exit 1
+    fi
+    cred="$(keyring_get_password "$2" || true)"
+    if [[ -z "$cred" && -t 0 ]]; then
+      if command -v gum >/dev/null 2>&1; then
+        cred="$(gum input --password --placeholder "Mot de passe pour $(echo "$prof" | jq -r .username)")"
+        if gum confirm "Enregistrer ce credential dans le trousseau de clés ?"; then
+          keyring_set_password "$2" "$cred"
+        fi
+      else
+        read -rsp "Mot de passe: " cred
+        echo
+      fi
+    fi
+    rdp_execute_session "$prof" "$cred"
     ;;
   --version|-v)
     echo "omarchy-rdp 1.0.0"

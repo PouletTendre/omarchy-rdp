@@ -32,24 +32,28 @@ rdp_setup_krb5() {
 
 rdp_build_args() {
   local profile_json="$1"
-  local password="${2:-}"
+  local credential="${2:-}"
 
-  local host port username domain sound microphone clipboard share_path ignore_cert
+  local host port username domain sound microphone clipboard share_path ignore_cert dynamic_res
   host="$(echo "$profile_json" | jq -r '.host')"
   port="$(echo "$profile_json" | jq -r '.port // 3389')"
   username="$(echo "$profile_json" | jq -r '.username')"
   domain="$(echo "$profile_json" | jq -r '.domain // ""')"
-  sound="$(echo "$profile_json" | jq -r '.sound // false')"
+  sound="$(echo "$profile_json" | jq -r 'if has("sound") then .sound else true end')"
   microphone="$(echo "$profile_json" | jq -r '.microphone // false')"
   clipboard="$(echo "$profile_json" | jq -r 'if has("clipboard") then .clipboard else true end')"
   share_path="$(echo "$profile_json" | jq -r '.share_path // ""')"
   ignore_cert="$(echo "$profile_json" | jq -r 'if has("ignore_cert") then .ignore_cert else true end')"
+  dynamic_res="$(echo "$profile_json" | jq -r 'if has("dynamic_resolution") then .dynamic_resolution else true end')"
 
   local -a args=(
     "/v:$host:$port"
     "/u:$username"
-    "/dynamic-resolution"
   )
+
+  if [[ "$dynamic_res" == "true" ]]; then
+    args+=("/dynamic-resolution")
+  fi
 
   if [[ "$ignore_cert" == "true" ]]; then
     args+=("/cert:ignore")
@@ -81,27 +85,24 @@ rdp_build_args() {
     args+=("/d:$domain")
   fi
 
-  if [[ -n "$password" ]]; then
-    args+=("/p:$password")
+  if [[ -n "$credential" ]]; then
+    args+=("/p:$credential")
   fi
-
-  local name
-  name="$(echo "$profile_json" | jq -r '.name // "Windows"')"
-  args+=("/title:$name - omarchy-rdp")
 
   printf '%s\n' "${args[@]}"
 }
 
-rdp_connect() {
+rdp_execute_session() {
   local profile_json="$1"
-  local password="${2:-}"
+  local credential="${2:-}"
 
   rdp_setup_krb5
 
   local -a args=()
   while IFS= read -r arg; do
     [[ -n "$arg" ]] && args+=("$arg")
-  done < <(rdp_build_args "$profile_json" "$password")
+  done < <(rdp_build_args "$profile_json" "$credential")
 
-  exec xfreerdp3 "${args[@]}"
+  xfreerdp3 "${args[@]}"
+  return $?
 }

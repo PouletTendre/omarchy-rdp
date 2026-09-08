@@ -43,7 +43,7 @@ menu_items="$(ui_build_menu_options)"
 assert_contains "$menu_items" "DesktopWork" "Profile listed in menu options"
 assert_contains "$menu_items" "Nouveau profil" "Add action in menu options"
 assert_contains "$menu_items" "Supprimer un profil" "Delete action in menu options"
-assert_contains "$menu_items" "Gérer un mot de passe" "Password action in menu options"
+assert_contains "$menu_items" "Gérer le credential" "Password action in menu options"
 
 # 3. Test failure in rdp execution triggers notification
 cat << 'FAIL_RDP_EOF' > "$MOCK_BIN_DIR/xfreerdp3"
