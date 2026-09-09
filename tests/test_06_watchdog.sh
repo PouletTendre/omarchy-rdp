@@ -44,6 +44,7 @@ FAIL_RDP_EOF
 chmod +x "$MOCK_BIN_DIR/xfreerdp3"
 
 "$APP" --watchdog "TargetPC"
+sleep 0.2
 notify_log="$(cat "$XDG_CONFIG_HOME/mock_notify.log" 2>/dev/null || true)"
 foot_log="$(cat "$XDG_CONFIG_HOME/mock_foot.log" 2>/dev/null || true)"
 

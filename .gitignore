@@ -10,3 +10,6 @@ docs/agents/
 *.tmp
 *.log
 /tmp/
+__pycache__/
+*.pyc
+.mypy_cache/

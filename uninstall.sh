@@ -13,12 +13,14 @@ done
 echo "=== Désinstallation de omarchy-rdp ==="
 
 BIN_TARGET="$HOME/.local/bin/omarchy-rdp"
+BIN_GUI_TARGET="$HOME/.local/bin/omarchy-rdp-gui"
 DESKTOP_FILE="$HOME/.local/share/applications/omarchy-rdp.desktop"
+DESKTOP_TUI_FILE="$HOME/.local/share/applications/omarchy-rdp-tui.desktop"
 INSTALL_BASE="$HOME/.local/share/omarchy-rdp"
 CONFIG_DIR="$HOME/.config/omarchy-rdp"
 HYPR_LUA="$HOME/.config/hypr/hyprland.lua"
 
-# 1. Suppression du lien exécutable
+# 1. Suppression des liens exécutables
 if [[ -L "$BIN_TARGET" || -f "$BIN_TARGET" ]]; then
   rm -f "$BIN_TARGET"
   echo "✓ Exécutable supprimé : $BIN_TARGET"
@@ -26,15 +28,26 @@ else
   echo "- Aucun exécutable trouvé dans $BIN_TARGET"
 fi
 
-# 2. Suppression du fichier desktop et rafraîchissement
+if [[ -L "$BIN_GUI_TARGET" || -f "$BIN_GUI_TARGET" ]]; then
+  rm -f "$BIN_GUI_TARGET"
+  echo "✓ Exécutable GUI supprimé : $BIN_GUI_TARGET"
+fi
+
+# 2. Suppression des fichiers desktop et rafraîchissement
 if [[ -f "$DESKTOP_FILE" ]]; then
   rm -f "$DESKTOP_FILE"
   echo "✓ Fichier .desktop supprimé : $DESKTOP_FILE"
-  if command -v update-desktop-database >/dev/null 2>&1; then
-    update-desktop-database "$(dirname "$DESKTOP_FILE")" 2>/dev/null || true
-  fi
 else
   echo "- Aucun fichier desktop trouvé dans $DESKTOP_FILE"
+fi
+
+if [[ -f "$DESKTOP_TUI_FILE" ]]; then
+  rm -f "$DESKTOP_TUI_FILE"
+  echo "✓ Fichier .desktop TUI supprimé : $DESKTOP_TUI_FILE"
+fi
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+  update-desktop-database "$(dirname "$DESKTOP_FILE")" 2>/dev/null || true
 fi
 
 # 3. Retrait de la règle de fenêtrage Hyprland

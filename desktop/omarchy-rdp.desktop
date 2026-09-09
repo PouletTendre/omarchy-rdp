@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Omarchy RDP
 Comment=Gestionnaire de Connexions Bureau à Distance
-Exec=foot --app-id=omarchy-rdp -e omarchy-rdp
+Exec=omarchy-rdp-gui
 Icon=network-workgroup
 Terminal=false
 Type=Application

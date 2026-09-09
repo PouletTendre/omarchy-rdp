@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# omarchy-rdp-gui: Native GTK 4 / Libadwaita launcher for Omarchy RDP
+
+set -euo pipefail
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+
+if [[ -f "$SCRIPT_DIR/../lib/gui.py" ]]; then
+  GUI_SCRIPT="$SCRIPT_DIR/../lib/gui.py"
+elif [[ -f "$SCRIPT_DIR/../lib/omarchy-rdp/gui.py" ]]; then
+  GUI_SCRIPT="$SCRIPT_DIR/../lib/omarchy-rdp/gui.py"
+elif [[ -f "/usr/lib/omarchy-rdp/gui.py" ]]; then
+  GUI_SCRIPT="/usr/lib/omarchy-rdp/gui.py"
+else
+  echo "Error: Could not locate omarchy-rdp GUI script" >&2
+  exit 1
+fi
+
+exec python3 "$GUI_SCRIPT" "$@"

@@ -34,13 +34,17 @@ touch "$FAKE_HOME/.config/hypr/hyprland.lua"
 
 HOME="$FAKE_HOME" "$SCRIPT_DIR/../install.sh" > "$TEST_DIR/install.log"
 
-# 1. Verify binary is installed in ~/.local/bin
+# 1. Verify binaries are installed in ~/.local/bin
 assert_eq "true" "$([[ -x "$FAKE_HOME/.local/bin/omarchy-rdp" ]] && echo true || echo false)" "Binary installed and executable"
+assert_eq "true" "$([[ -x "$FAKE_HOME/.local/bin/omarchy-rdp-gui" ]] && echo true || echo false)" "GUI Binary installed and executable"
 
-# 2. Verify desktop file is installed in ~/.local/share/applications
+# 2. Verify desktop files are installed in ~/.local/share/applications
 desktop_file="$FAKE_HOME/.local/share/applications/omarchy-rdp.desktop"
+desktop_tui_file="$FAKE_HOME/.local/share/applications/omarchy-rdp-tui.desktop"
 assert_eq "true" "$([[ -f "$desktop_file" ]] && echo true || echo false)" "Desktop file installed"
-assert_contains "$(cat "$desktop_file")" "foot --app-id=omarchy-rdp -e omarchy-rdp" "Desktop entry executes inside foot"
+assert_eq "true" "$([[ -f "$desktop_tui_file" ]] && echo true || echo false)" "TUI Desktop file installed"
+assert_contains "$(cat "$desktop_file")" "omarchy-rdp-gui" "Desktop entry executes GUI"
+assert_contains "$(cat "$desktop_tui_file")" "foot --app-id=omarchy-rdp -e omarchy-rdp" "TUI Desktop entry executes inside foot"
 
 # 3. Verify Hyprland rule is added
 hypr_content="$(cat "$FAKE_HOME/.config/hypr/hyprland.lua")"
@@ -65,7 +69,9 @@ echo 'o.window("^(omarchy-rdp-custom)$", { float = true })' >> "$FAKE_HOME/.conf
 HOME="$FAKE_HOME" "$SCRIPT_DIR/../uninstall.sh" > "$TEST_DIR/uninstall.log"
 
 assert_eq "false" "$([[ -e "$FAKE_HOME/.local/bin/omarchy-rdp" ]] && echo true || echo false)" "Binary symlink removed by uninstall"
+assert_eq "false" "$([[ -e "$FAKE_HOME/.local/bin/omarchy-rdp-gui" ]] && echo true || echo false)" "GUI Binary symlink removed by uninstall"
 assert_eq "false" "$([[ -e "$desktop_file" ]] && echo true || echo false)" "Desktop file removed by uninstall"
+assert_eq "false" "$([[ -e "$desktop_tui_file" ]] && echo true || echo false)" "TUI Desktop file removed by uninstall"
 assert_eq "false" "$([[ -d "$FAKE_HOME/.local/share/omarchy-rdp" ]] && echo true || echo false)" "Remote payload directory removed by uninstall"
 
 hypr_uninstalled="$(cat "$FAKE_HOME/.config/hypr/hyprland.lua")"

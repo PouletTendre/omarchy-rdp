@@ -6,9 +6,9 @@ Gestionnaire interactif de sessions Bureau à Distance (RDP) optimisé pour Omar
 
 ## Fonctionnalités
 
+- **Interface Graphique moderne (GUI)** : Interface native Wayland GTK 4 & Libadwaita avec recherche en direct, badges de statut de session, gestion complète des profils et raccourcis clavier (`Ctrl+F`, `Ctrl+N`).
 - **Interface TUI au clavier** : Recherche et filtrage instantanés des profils via `fzf` et formulaires interactifs via `gum`.
-- **Fenêtre éphémère** : Fermeture immédiate du Launcher lors de l'initialisation de la session pour éviter les fenêtres flottantes résiduelles sous Hyprland.
-- **Surveillance de session** : Détection des sorties prématurées (< 3s) ou des échecs, notification sur le bureau et réouverture automatique du Launcher.
+- **Suivi des sessions en direct** : Observation et gestion de plusieurs sessions parallèles avec boutons de déconnexion et notifications d'anomalies.
 - **Stockage sécurisé des identifiants** : Les secrets d'authentification sont conservés dans le trousseau de clés Linux (`secret-tool` / Secret Service) et ne sont jamais enregistrés en clair.
 - **Optimisations Wayland & Hyprland** :
   - Dynamic Resolution adaptée aux redimensionnements de fenêtres.
@@ -16,7 +16,8 @@ Gestionnaire interactif de sessions Bureau à Distance (RDP) optimisé pour Omar
   - Contournement de la latence NLA/Kerberos de FreeRDP 3.
   - Presse-papier partagé, redirection audio, microphone et dossiers locaux (Shares).
 - **Intégration système** :
-  - Raccourci `Super + Espace` (lanceur d'applications) avec règle de fenêtrage flottante dédiée.
+  - Lanceur d'applications (`Super + Espace`) : lance l'interface graphique par défaut.
+  - Lanceur secondaire « Omarchy RDP (Terminal) » pour ouvrir la TUI dans `foot`.
   - Commandes non-interactives en ligne de commande pour l'automatisation et les scripts.
 
 ---
@@ -31,11 +32,15 @@ Les dépendances système requises sont :
 - `freerdp` (FreeRDP 3 / `xfreerdp3`)
 - `libsecret` (`secret-tool`)
 - `foot`
+- `python` (>= 3.10)
+- `python-gobject`
+- `gtk4`
+- `libadwaita`
 
 Sous Arch Linux / Omarchy, installez-les via :
 
 ```bash
-sudo pacman -S bash jq gum fzf freerdp libsecret foot
+sudo pacman -S bash jq gum fzf freerdp libsecret foot python python-gobject gtk4 libadwaita
 ```
 
 ---
@@ -106,15 +111,27 @@ Si vous avez utilisé le script d'installation :
 
 ## Utilisation
 
+### Mode Graphique (GUI)
+
+Lancez l'interface graphique native GTK 4 / Libadwaita :
+
+```bash
+omarchy-rdp --gui
+# ou directement
+omarchy-rdp-gui
+```
+
+L'interface graphique s'ouvre également par défaut depuis le lanceur système via `Super + Espace` en choisissant **Omarchy RDP**.
+
 ### Mode interactif (TUI)
 
-Lancez l'interface interactive :
+Lancez l'interface terminal (dans `foot` ou tout autre terminal) :
 
 ```bash
 omarchy-rdp
 ```
 
-L'application est également accessible depuis le lanceur système via `Super + Espace` en recherchant **Omarchy RDP**.
+La TUI est également disponible dans le menu système via le lanceur **Omarchy RDP (Terminal)**.
 
 ### Commandes CLI
 

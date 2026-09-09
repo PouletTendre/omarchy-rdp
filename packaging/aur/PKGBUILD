@@ -6,7 +6,7 @@ pkgdesc="Interactive Terminal RDP Connection Manager for Omarchy and Hyprland"
 arch=('any')
 url="https://github.com/PouletTendre/omarchy-rdp"
 license=('MIT')
-depends=('bash' 'jq' 'gum' 'fzf' 'freerdp' 'libsecret' 'foot')
+depends=('bash' 'jq' 'gum' 'fzf' 'freerdp' 'libsecret' 'foot' 'python' 'python-gobject' 'gtk4' 'libadwaita')
 makedepends=('git')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
 sha256sums=('0fa6240761d70e6d88e9df1f2b84c484d2ba278ab8762a842cbe7eb01791b366')
@@ -15,9 +15,12 @@ package() {
   cd "$srcdir/$pkgname-$pkgver"
 
   install -Dm755 bin/omarchy-rdp "$pkgdir/usr/bin/omarchy-rdp"
+  install -Dm755 bin/omarchy-rdp-gui "$pkgdir/usr/bin/omarchy-rdp-gui"
   install -d "$pkgdir/usr/lib/omarchy-rdp"
   install -m755 lib/*.sh "$pkgdir/usr/lib/omarchy-rdp/"
+  install -m755 lib/gui.py "$pkgdir/usr/lib/omarchy-rdp/gui.py"
   install -Dm644 desktop/omarchy-rdp.desktop "$pkgdir/usr/share/applications/omarchy-rdp.desktop"
+  install -Dm644 desktop/omarchy-rdp-tui.desktop "$pkgdir/usr/share/applications/omarchy-rdp-tui.desktop"
   install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

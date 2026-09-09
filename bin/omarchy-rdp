@@ -45,6 +45,7 @@ Commands:
   --get-args <name> [--show-secrets] Print generated FreeRDP 3 arguments (password masked by default)
   --connect <name>             Launch RDP session for profile directly
   --watchdog <name>            Internal background runner monitoring session lifecycle
+  --gui                        Launch the graphical user interface (GTK 4 / Libadwaita)
   --version, -v                Print version
   --help, -h                   Show this help message
 
@@ -54,6 +55,19 @@ HELP_EOF
 }
 
 case "${1:-}" in
+  --gui)
+    shift
+    if [[ -x "$SCRIPT_DIR/omarchy-rdp-gui" ]]; then
+      exec "$SCRIPT_DIR/omarchy-rdp-gui" "$@"
+    elif command -v omarchy-rdp-gui >/dev/null 2>&1; then
+      exec omarchy-rdp-gui "$@"
+    elif [[ -f "$LIB_DIR/gui.py" ]]; then
+      exec python3 "$LIB_DIR/gui.py" "$@"
+    else
+      echo "Error: Could not locate omarchy-rdp GUI executable" >&2
+      exit 1
+    fi
+    ;;
   --list)
     config_list_profiles
     ;;
