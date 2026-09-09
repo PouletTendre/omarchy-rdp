@@ -334,6 +334,10 @@ class SessionManager:
         args = self.build_rdp_args(profile, credential=credential, mask_secrets=False)
         payload = ("\n".join(args) + "\n").encode("utf-8")
 
+        if not shutil.which("xfreerdp3"):
+            self.notify_error(f"Impossible de lancer la session '{name}' : xfreerdp3 est introuvable.")
+            return False
+
         r_fd, w_fd = os.pipe()
         try:
             with open(w_fd, "wb") as f:
@@ -342,15 +346,10 @@ class SessionManager:
             os.close(r_fd)
             return False
 
-        def preexec():
-            if r_fd != 3:
-                os.dup2(r_fd, 3)
-
         try:
             proc = subprocess.Popen(
-                ["xfreerdp3", "/args-from:fd:3"],
-                pass_fds=(r_fd,),
-                preexec_fn=preexec,
+                ["bash", "-c", "exec xfreerdp3 /args-from:fd:3 3<&0 0</dev/null"],
+                stdin=r_fd,
                 env=env,
             )
         except OSError as e:
