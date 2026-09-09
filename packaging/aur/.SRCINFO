@@ -1,6 +1,6 @@
 pkgbase = omarchy-rdp
 	pkgdesc = Interactive Terminal RDP Connection Manager for Omarchy and Hyprland
-	pkgver = 1.0.4
+	pkgver = 1.1.0
 	pkgrel = 1
 	url = https://github.com/PouletTendre/omarchy-rdp
 	arch = any
@@ -13,7 +13,11 @@ pkgbase = omarchy-rdp
 	depends = freerdp
 	depends = libsecret
 	depends = foot
-	source = omarchy-rdp-1.0.4.tar.gz::https://github.com/PouletTendre/omarchy-rdp/archive/refs/tags/v1.0.4.tar.gz
-	sha256sums = 0fa6240761d70e6d88e9df1f2b84c484d2ba278ab8762a842cbe7eb01791b366
+	depends = python
+	depends = python-gobject
+	depends = gtk4
+	depends = libadwaita
+	source = omarchy-rdp-1.1.0.tar.gz::https://github.com/PouletTendre/omarchy-rdp/archive/refs/tags/v1.1.0.tar.gz
+	sha256sums = 6d22ab8400d6527441d35be689fafe739cb224258641b1b6602482585b623c21
 
 pkgname = omarchy-rdp
